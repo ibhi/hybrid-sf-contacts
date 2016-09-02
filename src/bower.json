@@ -29,7 +29,8 @@
     "angular-animate": "^1.5.3",
     "angular-bootstrap": "^1.2.5",
     "ngCordova": "^0.1.27-alpha",
-    "ng-cordova-oauth": "^0.2.10"
+    "ng-cordova-oauth": "^0.2.10",
+    "jsforce": "^1.7.0"
   },
   "resolutions": {
     "angular": "1.5.3"
