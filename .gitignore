@@ -16,6 +16,11 @@ platforms/ios/.staging
 # Emulator logs
 platforms/ios/cordova/console.log
 
+plugins/
+!plugin/android.json
+!plugin/ios.json
+!plugin/fetch.json
+
 www/
 
 src/report
