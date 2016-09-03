@@ -21,3 +21,5 @@ www/
 src/report
 src/tmp
 src/.tmp
+
+node_modules
