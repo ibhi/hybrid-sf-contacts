@@ -72,8 +72,9 @@
   <script src="cordova.js"></script>
   <script>
       document.addEventListener('deviceready', function() {
-          angular.bootstrap(document, ['app']);
-        }, false);
+        console.log('smartstore: ', navigator.smartstore);
+        angular.bootstrap(document, ['app']);
+      }, false);
   </script>
   <!-- build:js js/app.js -->
   <!-- inject:js -->

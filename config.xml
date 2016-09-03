@@ -24,5 +24,4 @@
     </platform>
     <content src="index.html" />
     <engine name="android" spec="~5.2.2" />
-    <plugin name="cordova-plugin-inappbrowser" spec="https://git-wip-us.apache.org/repos/asf/cordova-plugin-inappbrowser.git" />
 </widget>

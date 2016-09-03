@@ -54,10 +54,49 @@
               accessToken: result.access_token
             });
 
-            var query = 'SELECT Id, Name from Contact';
+            var indexSpecs = [
+              {
+                path: "Id",
+                type: "string"
+              },
+              {
+                path: "Name",
+                type: "string"
+              },
+              {
+                path: "Email",
+                type: "string"
+              }
+            ];
+            
+            var sfSmartStore = navigator.smartstore;
+            var isSfSmartStore = false;
+            sfSmartStore.registerSoup('contacts', indexSpecs, successCallback, errorCallback)
+
+            var successCallback = function(soupName) {
+              isSfSmartStore = true;
+              console.log("Soup " + soupName + " was successfully created"); 
+            };
+            var errorCallback = function(err) { console.log("registerSoup failed with error:" + err); };
+
+            var query = 'SELECT Id, Name, Email, MobilePhone, Account from Contact';
 
             conn.queryPromise(query).then(function(data) {
               console.log(data.records);
+              var contacts = data.records;
+              if(contacts.lenght > 0) {
+                if(isSfSmartStore) {
+                  sfSmartStore.upsertSoupEntries('contacts', contacts, 
+                    function(items) {
+                      var statusTxt = "upserted: " + items.length + " contacts";
+                      console.log(statusTxt);
+                
+                    }, function(err) {
+                      console.error('Upsert Error ', err);
+                    });
+                }
+              }
+              
             }, function(err) {
               console.error(err);
             });
