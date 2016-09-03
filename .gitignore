@@ -17,3 +17,7 @@ platforms/ios/.staging
 platforms/ios/cordova/console.log
 
 www/
+
+src/report
+src/tmp
+src/.tmp
