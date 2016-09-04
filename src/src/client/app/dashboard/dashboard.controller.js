@@ -20,7 +20,7 @@
 
       var forcetkClient;
       console.log('Forcetk ckient ', forcetkClient);
-      var fieldsList = ['Id', 'Name', 'Email', 'MobilePhone'];
+      var fieldsList = ['Id', 'FirstName', 'LastName', 'Email'];
       activate();
 
       function activate() {
@@ -66,7 +66,11 @@
               type: "string"
             },
             {
-              path: "Name",
+              path: "FirstName",
+              type: "string"
+            },
+            {
+              path: "LastName",
               type: "string"
             },
             {
@@ -127,7 +131,7 @@
         // });
       }
 
-      var soupFieldsList = ['Id', 'Name', 'Email'];
+      var soupFieldsList = ['Id', 'FirstName', 'LastName', 'Email'];
 
       function queryFromSoup() {
         
@@ -222,6 +226,51 @@
 
         cordova.require("com.salesforce.plugin.smartsync").syncDown(target, 'contacts', options, callback);
       };
+
+      vm.syncUp = function() {
+        var soupName = 'contacts';
+        var options = {
+          fieldlist: ['FirstName', 'LastName', 'Email'],
+          mergeMode: "OVERWRITE"
+        };
+        function successCallback(result) {
+          console.log('Syncup callback called ', result);
+          // vm.syncDown();
+        }
+        document.addEventListener("sync",
+          function(event) {
+            // event.detail contains the status of the sync operation
+            console.log('Event Status ', event.detail);
+            console.log('Progress: ' + event.detail.progress);
+          }
+        );
+
+        // function failureCallback(error) {
+        //   console.log('Error syncing up', error);
+        // }
+        cordova.require("com.salesforce.plugin.smartsync")
+          .syncUp(soupName, options, successCallback);
+      };
+
+      vm.insertContact = function() {
+        var contact = {
+          FirstName: 'Arnold',
+          LastName: 'Swaz',
+          Email: 'arnold@gmail.com',
+        };
+        sfSmartStore()
+          .upsertSoupEntries('contacts', [contact], successCallback, failureCallback);
+
+        function successCallback(items) {
+          var statusTxt = "upserted: " + items.length + " contacts";
+          console.log(statusTxt);
+    
+        }
+
+        function failureCallback(err) {
+          console.error('Upsert Error ', err);
+        }
+      }
 
       vm.removeSoup = function() {
         sfSmartStore().removeSoup('contacts',onSuccessRemoveSoup, onErrorRemoveSoup);
