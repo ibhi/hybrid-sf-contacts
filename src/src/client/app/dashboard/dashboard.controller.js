@@ -53,13 +53,13 @@
       var sfSmartStore;
 
       function initSmartStore() {
-        navigator.smartstore.soupExists('contacts', successCallback, errorCallback);
+        // navigator.smartstore.soupExists('contacts', successCallback, errorCallback);
 
-        function successCallback() {
-          console.log('Contacts soup already exists');
-        }
+        // function successCallback() {
+        //   console.log('Contacts soup already exists');
+        // }
 
-        function errorCallback() {
+        // function errorCallback() {
           var indexSpecs = [
             {
               path: "Id",
@@ -84,7 +84,7 @@
           var errorCallback = function(err) { 
             console.log("registerSoup failed with error:" + err); 
           };
-        }
+        // }
 
         sfSmartStore = function () {
           return cordova.require('com.salesforce.plugin.smartstore');
@@ -183,6 +183,15 @@
         //       console.error(error);
         //     });
         // }
+      }
+
+      vm.logout = function() {
+        console.log('User logged out');
+        cordova.require("com.salesforce.plugin.sfaccountmanager").logout();
+      }
+
+      vm.switchUser = function() {
+          cordova.require("com.salesforce.plugin.sfaccountmanager").switchToUser();
       }
 
       vm.showSmartStoreInspector = function() {
