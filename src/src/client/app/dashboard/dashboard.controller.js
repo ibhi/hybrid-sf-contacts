@@ -133,6 +133,43 @@
         sfSmartStore().showInspector();
       };
 
+      vm.syncDown = function() {
+        var options = {
+          mergeMode:"OVERWRITE"
+        };
+
+        var target = {
+          type: 'soql',
+          query: 'SELECT Id, Name, Email, MobilePhone from Contact'
+        }
+
+        var callback = function() {
+          console.log('Sync down callback called ', arguments.length, arguments);
+        };
+
+        document.addEventListener("sync",
+           function(event)
+              {
+                 // event.detail contains the status of the sync operation
+                 console.log('Event Status ', event.details);
+              }
+        );
+        cordova.require("com.salesforce.plugin.smartsync")
+          .syncDown(target, 'contacts', options, callback);
+      };
+
+      vm.removeSoup = function() {
+        sfSmartStore().removeSoup('contacts',onSuccessRemoveSoup, onErrorRemoveSoup);
+        
+        function onSuccessRemoveSoup(result) {
+          console.log('Soup removed successfully', result);
+        }
+
+        function onErrorRemoveSoup(error) {
+          console.log('Error removing soup ', error);
+        }
+      }
+
     }, false);
   }
 })();
