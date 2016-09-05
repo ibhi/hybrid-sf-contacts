@@ -31,10 +31,12 @@
     "ngCordova": "^0.1.27-alpha",
     "ng-cordova-oauth": "^0.2.10",
     "jsforce": "^1.7.0",
-    "forcetk.mobilesdk": "*"
+    "forcetk.mobilesdk": "*",
+    "smartsync": "*"
   },
   "resolutions": {
-    "angular": "1.5.3"
+    "angular": "1.5.3",
+    "jquery": "^2.2.2"
   },
   "overrides": {
     "bootstrap": {
