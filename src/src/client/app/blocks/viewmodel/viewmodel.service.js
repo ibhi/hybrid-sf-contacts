@@ -18,19 +18,34 @@
         this.model = modelObj.model;
         this.fieldlist = this.models.Contact.prototype.fieldlist('read');
         this.fieldlistForSyncUp = _.without(this.models.Contact.prototype.fieldlist('read'), "Id", "LastModifiedDate");
-        // this.listView = new app.views.ContactListView({model: this.model});
+
+
+        // var setupProps = function(props) {
+        //     props.forEach(function(prop) {
+        //         Object.defineProperty(that, prop, {
+        //             get: function() {
+        //                 return that.model.get(prop);
+        //             },
+        //             set: function(val) {
+        //                 that.model.set(prop, val);
+        //             },
+        //             enumerable: true
+        //         });
+        //     });
+        // }
+        // setupProps(_.union(_.keys(that.model.attributes), that.model.fieldlist));
+        // // Setup an event listener to update properties whenever model attributes change
+        // this.model.on('change', function() {
+        //     setupProps(_.difference(_.keys(that.model.attributes), _.keys(that)));
+        // });
+
+        
         document.addEventListener("sync", function() { 
             that.handleSyncUpdate(event.detail);
         });
     },
 
-    // render: function(eventName) {
-    //     $(this.el).html(this.template());
-    //     $(".search-key", this.el).val(this.model.getCriteria());
-    //     this.listView.setElement($("ul", this.el)).render();
-    //     return this;
-    // },
-
+    
     // syncUp followed by syncDown followed by search
     handleSyncUpdate: function(sync) {
         if (sync.status !== "DONE") {

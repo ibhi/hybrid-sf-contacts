@@ -5,9 +5,9 @@
     .module('app.dashboard')
     .controller('DashboardController', DashboardController);
 
-  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel'];
+  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel', '$timeout'];
   /* @ngInject */
-  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel) {
+  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel, $timeout) {
     var vm = this;
     document.addEventListener("deviceready", function () {
       vm.news = {
@@ -17,6 +17,7 @@
       vm.messageCount = 0;
       vm.people = [];
       vm.title = 'Dashboard';
+      vm.contacts = [];
 
       var forcetkClient;
       console.log('Forcetk ckient ', forcetkClient);
@@ -47,6 +48,13 @@
         var contactCollectionViewModel = viewModel;
         contactCollectionViewModel.initialize({model: new models.ContactCollection()});
         contactCollectionViewModel.search();
+        $timeout(function() {
+          $scope.$apply(function() {
+            vm.contacts = contactCollectionViewModel.model.models;
+            
+          });
+        }, 2000 /*TODO: Remove the settiemout; Just a temporary hack for debug */);
+
         window.viewModel = viewModel;
 
       }

@@ -29,7 +29,7 @@
             <div ht-widget-header title="People" allow-collapse="true"></div>
             <div class="widget-content text-center text-info">
               <ul>
-                <li ng-repeat="contact in vm.contacts"> {{contact.Name}} </li>
+                <li ng-repeat="contact in vm.contacts track by $index"> {{contact.attributes.FirstName}} </li>
               </ul>
             </div>
             <div class="widget-foot">
