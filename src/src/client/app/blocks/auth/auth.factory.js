@@ -28,14 +28,15 @@
 
             function salesforceSessionRefreshed(creds) {
                 console.log('Auth successfull ', creds);
-                var credsData = creds;
-                if (creds.data)  // Event sets the `data` object with the auth data.
-                    credsData = creds.data;
-                forcetkClient = new forcetk.Client(credsData.clientId, credsData.loginUrl, null,cordova.require("com.salesforce.plugin.oauth").forcetkRefresh);
-                forcetkClient.setSessionToken(credsData.accessToken, apiVersion, credsData.instanceUrl);
-                forcetkClient.setRefreshToken(credsData.refreshToken);
-                forcetkClient.setUserAgentString(credsData.userAgent);
-                resolve(forcetkClient);
+                // var credsData = creds;
+                // if (creds.data)  // Event sets the `data` object with the auth data.
+                //     credsData = creds.data;
+                // forcetkClient = new forcetk.Client(credsData.clientId, credsData.loginUrl, null,cordova.require("com.salesforce.plugin.oauth").forcetkRefresh);
+                // forcetkClient.setSessionToken(credsData.accessToken, apiVersion, credsData.instanceUrl);
+                // forcetkClient.setRefreshToken(credsData.refreshToken);
+                // forcetkClient.setUserAgentString(credsData.userAgent);
+                Force.init(creds, null, null, cordova.require("com.salesforce.plugin.oauth").forcetkRefresh);
+                resolve();
             }
 
             function failureAuth(error) {
@@ -43,7 +44,7 @@
                 reject(error);
             }
 
-            document.addEventListener("salesforceSessionRefresh",salesforceSessionRefreshed,false);
+            // document.addEventListener("salesforceSessionRefresh",salesforceSessionRefreshed,false);
 
           });
         }

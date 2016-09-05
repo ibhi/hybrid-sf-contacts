@@ -232,12 +232,12 @@ gulp.task('optimize', ['inject'], function() {
     // Get the custom javascript
     .pipe(jsAppFilter)
     .pipe($.ngAnnotate({ add: true }))
-    .pipe($.uglify())
+    // .pipe($.uglify())
     .pipe(getHeader())
     .pipe(jsAppFilter.restore())
     // Get the vendor javascript
     .pipe(jslibFilter)
-    .pipe($.uglify()) // another option is to override wiredep to use min files
+    // .pipe($.uglify()) // another option is to override wiredep to use min files
     .pipe(jslibFilter.restore())
     // Take inventory of the file names for future rev numbers
     .pipe($.rev())
