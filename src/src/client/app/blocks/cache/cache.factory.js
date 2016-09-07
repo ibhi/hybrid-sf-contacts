@@ -10,12 +10,17 @@
   function cacheFactory($q) {
     var cache = {};
 
-    document.addEventListener('deviceready', function() {
-        var dbName = 'demo.db';
-        var dbLocation = 'default';
-        var db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
+    // document.addEventListener('deviceready', function() {
+
+        cache.init = function(dbName, dbLocation) {
+            if(!window.sqlitePlugin) return new Error('sqlitePlugin not installed ');
+            if(!dbName) dbName = 'demo.db';
+            if(!dbLocation) dbLocation = 'default';
+            var db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
+            if(!db) return new Error('DB Creation error');
+        };
+
         
-        if(!db) return null;
 
         function createPlaceholderQuestionmark(fieldNames) {
             return fieldNames.map(function() {
@@ -172,7 +177,7 @@
 
 
         return cache;
-    });
+    // });
     
   }
 
