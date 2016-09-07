@@ -21,7 +21,6 @@ plugins/
 !plugin/ios.json
 !plugin/fetch.json
 
-www/
 
 src/report
 src/tmp

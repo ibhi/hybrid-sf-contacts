@@ -1,0 +1,17 @@
+{
+  "remoteAccessConsumerKey": "3MVG9ZL0ppGP5UrB9yKKJFrcw9oLs3cE8WGYH48tygt32vxANS2FoD8c6qGpHAxVv0aEWJDVgrMeU5w8vSkik",
+  "oauthRedirectURI": "http://localhost/callback",
+  "oauthScopes": [
+    "web",
+    "api",
+    "id",
+    "refresh_token",
+    "offline_access"
+  ],
+  "isLocal": true,
+  "startPage": "index.html",
+  "errorPage": "error.html",
+  "shouldAuthenticate": true,
+  "attemptOfflineLoad": true,
+  "androidPushNotificationClientId": ""
+}

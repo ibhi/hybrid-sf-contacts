@@ -35,7 +35,7 @@
                 // forcetkClient.setSessionToken(credsData.accessToken, apiVersion, credsData.instanceUrl);
                 // forcetkClient.setRefreshToken(credsData.refreshToken);
                 // forcetkClient.setUserAgentString(credsData.userAgent);
-                Force.init(creds, null, null, cordova.require("com.salesforce.plugin.oauth").forcetkRefresh);
+                Force.init(_.extend(creds, {userAgent: navigator.userAgent}), null, null, cordova.require("com.salesforce.plugin.oauth").forcetkRefresh);
                 resolve();
             }
 
