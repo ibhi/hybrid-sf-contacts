@@ -12,16 +12,8 @@
 
     // document.addEventListener('deviceready', function() {
 
-        cache.init = function(dbName, dbLocation) {
-            if(!window.sqlitePlugin) return new Error('sqlitePlugin not installed ');
-            if(!dbName) dbName = 'demo.db';
-            if(!dbLocation) dbLocation = 'default';
-            var db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
-            if(!db) return new Error('DB Creation error');
-        };
-
+        var db;
         
-
         function createPlaceholderQuestionmark(fieldNames) {
             return fieldNames.map(function() {
                 return '?'
@@ -33,6 +25,25 @@
                 return fieldName + '=?'
             }).join(',');
         }
+
+        /**
+         * Method to initialize database
+         *
+         * @param {String} [dbName] - Name of the DB
+         * @param {String} [dbLocation] - Location of database table
+         * @returns {Promise} - Returns angularjs promise
+        */
+
+        cache.init = function(dbName, dbLocation) {
+            if(!window.sqlitePlugin) return new Error('sqlitePlugin not installed ');
+            if(!dbName) dbName = 'demo.db';
+            if(!dbLocation) dbLocation = 'default';
+            db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
+            if(!db) return new Error('DB Creation error');
+        };
+
+        
+
 
         /**
          * Method to create tables
@@ -134,6 +145,8 @@
          * @returns {Promise} - Returns angularjs promise
         */
         cache.save = function(fieldNames, fieldValues, tableName) {
+            fieldNames = _.concat(fieldNames, '__locally_updated__');
+            fieldValues = _.concat(fieldValues, true);
             return $q(function(resolve, reject){
                 var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
                 db.transaction(function(tx) {
