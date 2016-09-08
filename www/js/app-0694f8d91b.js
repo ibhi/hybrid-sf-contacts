@@ -85,7 +85,7 @@
     .module('app.core', [
       'ngAnimate', 'ngSanitize',
       'blocks.exception', 'blocks.logger', 'blocks.router', 'blocks.constants',
-      'blocks.jsforce', 'blocks.auth','blocks.models','blocks.viewModel',
+      'blocks.jsforce', 'blocks.auth','blocks.models','blocks.viewModel', 'blocks.cache',
       'ui.router', 'ngplus',
       'ngCordova'
     ]);
@@ -246,6 +246,417 @@
 
     return auth;
   }
+
+})();
+
+// (function() {
+//   'use strict';
+
+//   // angular
+//   //   .module('blocks.cache')
+//   //   .service('cache', cacheFactory);
+
+//   cacheFactory.$inject = ['$q'];
+
+//   function cacheFactory($q) {
+//     var cache = {};
+
+//     // document.addEventListener('deviceready', function() {
+
+//         var db;
+        
+//         function createPlaceholderQuestionmark(fieldNames) {
+//             return fieldNames.map(function() {
+//                 return '?'
+//             }).join(',');
+//         }
+
+//         function createUpdateQuery(fieldNames) {
+//             return fieldNames.map(function(fieldName) {
+//                 return fieldName + '=?'
+//             }).join(',');
+//         }
+
+//         /**
+//          * Method to initialize database
+//          *
+//          * @param {String} [dbName] - Name of the DB
+//          * @param {String} [dbLocation] - Location of database table
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+
+//         cache.init = function(dbName, dbLocation) {
+//             if(!window.sqlitePlugin) return new Error('sqlitePlugin not installed ');
+//             if(!dbName) dbName = 'demo.db';
+//             if(!dbLocation) dbLocation = 'default';
+//             db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
+//             if(!db) return new Error('DB Creation error');
+//         };
+
+        
+
+
+//         /**
+//          * Method to create tables
+//          *
+//          * @param {String} fieldSpec - Fieldnames with type and key information in string format; (ex: id integer primary key, business_id integer, business_name text)
+//          * @param {String} tableName - Table name
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.createTable = function(fieldSpec, tableName) {
+//             return $q(function(resolve, reject){
+//                 db.transaction(function(tx) {
+//                     tx.executeSql('CREATE TABLE IF NOT EXISTS DemoTable (?) (' + fieldSpec + ')', [tableName],
+//                     function(tx, result) {
+//                         console.log('Populated database OK');
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Transaction ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             });
+//         }
+
+//         /**
+//          * Method to create a new record
+//          *
+//          * @param {Array} fieldNames - Name of fields to perform the transaction
+//          * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+//          * @param {String} tableName - Name of table to perform the transaction
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.create = function(fieldNames, fieldValues, tableName) {
+//             return $q(function(resolve, reject){
+//                 var query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
+//                     ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
+//                 db.transaction(function(tx) {
+//                     tx.executeSql(query, fieldValues,
+//                     function(tx, result) {
+//                         console.log('Record created ', result);
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Create ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             }
+//         }
+
+//         /**
+//          * Method to get all records
+//          *
+//          * @param {String} tableName - Name of table to perform the transaction
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.retrieveAll = function(tableName) {
+//             return $q(function(resolve, reject){
+//                 var query = 'SELECT * FROM ' + tableName;
+//                 db.transaction(function(tx) {
+//                     tx.executeSql(query, [],
+//                     function(tx, result) {
+//                         console.log('All records', result);
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Insert ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             }
+//         }
+
+//         /**
+//          * Method to get single record
+//          *
+//          * @param {String} tableName - Name of table to perform the transaction
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.retrieve = function(fieldNames, id, tableName) {
+//             return $q(function(resolve, reject){
+//                 var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + 'WHERE Id=?';
+//                 db.transaction(function(tx) {
+//                     tx.executeSql(query, [id],
+//                     function(tx, result) {
+//                         console.log('Record fetched ', result);
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Fetch ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             }
+//         }
+
+//         /**
+//          * Method to update a record with unique Id
+//          *
+//          * @param {Array} fieldNames - Name of fields to perform the transaction
+//          * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+//          * @param {String} tableName - Name of table to perform the transaction
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.save = function(fieldNames, fieldValues, tableName) {
+//             fieldNames = _.concat(fieldNames, '__locally_updated__');
+//             fieldValues = _.concat(fieldValues, true);
+//             return $q(function(resolve, reject){
+//                 var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
+//                 db.transaction(function(tx) {
+//                     tx.executeSql(query, fieldValues,
+//                     function(tx, result) {
+//                         console.log('Record updated ', result);
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Update ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             }
+//         }
+
+//         /**
+//          * Method to delete a record with unique Id
+//          *
+//          * @param {Array} fieldNames - Name of fields to perform the transaction
+//          * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+//          * @param {String} tableName - Name of table to perform the transaction
+//          * @returns {Promise} - Returns angularjs promise
+//         */
+//         cache.delete = function(id, tableName) {
+//             return $q(function(resolve, reject){
+//                 var query = 'DELETE FROM ' + tableName + ' WHERE Id=?';
+//                 db.transaction(function(tx) {
+//                     tx.executeSql(query, [id],
+//                     function(tx, result) {
+//                         console.log('Record deleted ', result);
+//                         resolve(result);
+//                     }, function(error) {
+//                         console.log('Delete ERROR: ' + error.message);
+//                         reject(error);
+//                     });
+//                 });
+//             }
+//         }
+
+
+
+
+//         return cache;
+//     // });
+    
+//   }
+
+
+// })();
+
+(function() {
+  'use strict';
+
+  angular.module('blocks.cache', []);
+  
+})();
+(function() {
+  'use strict';
+
+  angular
+    .module('blocks.cache')
+    .provider('cache', cacheProvider);
+
+  cacheProvider.$inject = ['$qProvider'];
+
+  function cacheProvider($qProvider) {
+
+    var config = {
+        dbName: 'demo.db',
+        dbLocation:'default'
+    };
+
+    this.config = function(cfg) {
+        angular.extend(config, cfg);
+    };
+
+    this.$get = CacheHelper;
+
+    CacheHelper.$inject = ['$q'];
+    
+    function CacheHelper($q) {
+
+        function createPlaceholderQuestionmark(fieldNames) {
+            return fieldNames.map(function() {
+                return '?'
+            }).join(',');
+        }
+
+        function createUpdateQuery(fieldNames) {
+            return fieldNames.map(function(fieldName) {
+                return fieldName + '=?'
+            }).join(',');
+        }
+        
+        /**
+         * Cache constructor
+         *
+         * @class - Cache constructor
+        */
+
+        function Cache(){
+            this.db = window.sqlitePlugin.openDatabase({name: config.dbName , location: config.dbLocation});
+            if(!this.db) return new Error('Error creating database');
+        }
+
+        /**
+         * Method to create tables
+         *
+         * @param {String} fieldSpec - Fieldnames with type and key information in string format; (ex: id integer primary key, business_id integer, business_name text)
+         * @param {String} tableName - Table name
+         * @returns {Promise} - Returns angularjs promise
+        */
+
+        Cache.prototype.createTable = function(fieldSpec, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                that.db.transaction(function(tx) {
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS ' + tableName + ' (' + fieldSpec + ')', [],
+                    function(tx, result) {
+                        console.log('Populated database OK');
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Transaction ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to create a new record
+         *
+         * @param {Array} fieldNames - Name of fields to perform the transaction
+         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.create = function(fieldNames, fieldValues, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                var query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
+                    ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, fieldValues,
+                    function(tx, result) {
+                        console.log('Record created ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Create ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to get all records
+         *
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.retrieveAll = function(tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                var query = 'SELECT * FROM ' + tableName;
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, [],
+                    function(tx, result) {
+                        console.log('All records', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Insert ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to get single record
+         *
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.retrieve = function(fieldNames, id, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, [id],
+                    function(tx, result) {
+                        console.log('Record fetched ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Fetch ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to update a record with unique Id
+         *
+         * @param {Array} fieldNames - Name of fields to perform the transaction
+         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.save = function(fieldNames, fieldValues, tableName) {
+            var that = this;
+            fieldNames = _.concat(fieldNames, '__locally_updated__');
+            fieldValues = _.concat(fieldValues, true);
+            return $q(function(resolve, reject){
+                var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, fieldValues,
+                    function(tx, result) {
+                        console.log('Record updated ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Update ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to delete a record with unique Id
+         *
+         * @param {Array} fieldNames - Name of fields to perform the transaction
+         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.delete = function(id, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                var query = 'DELETE FROM ' + tableName + ' WHERE Id=?';
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, [id],
+                    function(tx, result) {
+                        console.log('Record deleted ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Delete ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        return new Cache();
+    }
+  
+
+    }
+
 
 })();
 
@@ -915,13 +1326,31 @@
 (function() {
   'use strict';
 
+  angular.module('app.dashboard')
+  	.config(dashboardConfig);
+
+  dashboardConfig.$inject = ['cacheProvider'];
+
+  function dashboardConfig(cacheProvider) {
+  	var config = {
+      dbName: 'dashboard.db',
+      dbLocation:'default'
+    };
+  	cacheProvider.config(config);
+  }
+
+})();
+
+(function() {
+  'use strict';
+
   angular
     .module('app.dashboard')
     .controller('DashboardController', DashboardController);
 
-  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel', '$timeout'];
+  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel', '$timeout', 'cache'];
   /* @ngInject */
-  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel, $timeout) {
+  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel, $timeout, cache) {
     var vm = this;
     document.addEventListener("deviceready", function () {
       vm.news = {
@@ -1336,6 +1765,55 @@
         }
       }
 
+      var tableName = 'contacts';
+
+      vm.createTable = function() {
+        var fieldSpec = 'Id text primary key, FirstName text, LastName text, Email text'
+        cache.createTable(fieldSpec, tableName).then(function(result) {
+          console.log(result);
+        }, function(error) {
+          console.log(error);
+        });
+
+      };
+
+      var testData = {
+        Id: 'cde',
+        FirstName: 'Ayeesha Siddikka',
+        LastName: 'Ibrahim'
+      };
+
+      var fieldNames = _.keys(testData);
+      var fieldValues = _.values(testData);
+
+
+      vm.createRecord = function() {
+        
+
+        cache.create(fieldNames, fieldValues, tableName).then(function(result) {
+          console.log(result);
+        }, function(error) {
+          console.log(error);
+        });
+
+      };
+
+      vm.retrieveAll = function() {
+        cache.retrieveAll(tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.retrieve = function() {
+        cache.retrieve(fieldNames, 'abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
     }, false);
   }
 })();
@@ -1592,7 +2070,7 @@
 
 angular.module("app.core").run(["$templateCache", function($templateCache) {$templateCache.put("app/admin/admin.html","<section class=mainbar><section class=matter><div class=container><div class=row><div class=\"widget wviolet\"><div ht-widget-header title={{vm.title}}></div><div class=\"widget-content user\"><h3>TODO: Implement Your Features</h3></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></section></section>");
 $templateCache.put("app/core/404.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=bred><div class=pull-left><i class=\"fa fa-warning\"></i></div><div class=\"datas-text pull-right\"><a><span class=bold>404</span></a>Page Not Found</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=\"widget wblue\"><div ht-widget-header title=\"Page Not Found\" allow-collapse=true></div><div class=\"widget-content text-center text-info\"><div class=container>No soup for you!</div></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></section></section>");
-$templateCache.put("app/dashboard/dashboard.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=blightblue><div class=pull-left><i class=\"fa fa-plane\"></i></div><div class=\"datas-text pull-right\"><span class=bold>May 18 - 19, 2015</span> Castle Resort, Neverland</div><div class=clearfix></div></li><li class=borange><div class=pull-left><i class=\"fa fa-envelope\"></i></div><div class=\"datas-text pull-right\"><span class=bold>{{vm.messageCount}}</span> Messages</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=col-md-6><div class=\"widget wviolet\"><div ht-widget-header title=People allow-collapse=true></div><div class=\"widget-content text-center text-info\"><ul><li ng-repeat=\"contact in vm.contacts track by $index\">{{contact.attributes.FirstName}}</li></ul></div><div class=widget-foot><div class=clearfix></div></div></div></div><div class=col-md-6><div class=\"widget wgreen\"><div ht-widget-header title={{vm.news.title}} allow-collapse=true></div><div class=\"widget-content text-center text-info\"><small>{{vm.news.description}}</small> <button ng-click=vm.login()>Login</button> <button ng-click=vm.showSmartStoreInspector()>Show Smart Store Inspector</button> <button ng-click=vm.syncDown()>Sync Down</button> <button ng-click=vm.removeSoup()>Reomve Soup</button> <button ng-click=vm.logout()>Logout</button> <button ng-click=vm.switchUser()>Switch User</button> <button ng-click=vm.insertContact()>Insert Contact</button> <button ng-click=vm.syncUp()>Sync Up</button></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></div></section></section>");
+$templateCache.put("app/dashboard/dashboard.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=blightblue><div class=pull-left><i class=\"fa fa-plane\"></i></div><div class=\"datas-text pull-right\"><span class=bold>May 18 - 19, 2015</span> Castle Resort, Neverland</div><div class=clearfix></div></li><li class=borange><div class=pull-left><i class=\"fa fa-envelope\"></i></div><div class=\"datas-text pull-right\"><span class=bold>{{vm.messageCount}}</span> Messages</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=col-md-6><div class=\"widget wviolet\"><div ht-widget-header title=People allow-collapse=true></div><div class=\"widget-content text-center text-info\"><ul><li ng-repeat=\"contact in vm.contacts track by $index\">{{contact.attributes.FirstName}}</li></ul></div><div class=widget-foot><div class=clearfix></div></div></div></div><div class=col-md-6><div class=\"widget wgreen\"><div ht-widget-header title={{vm.news.title}} allow-collapse=true></div><div class=\"widget-content text-center text-info\"><small>{{vm.news.description}}</small> <button ng-click=vm.login()>Login</button> <button ng-click=vm.showSmartStoreInspector()>Show Smart Store Inspector</button> <button ng-click=vm.syncDown()>Sync Down</button> <button ng-click=vm.removeSoup()>Reomve Soup</button> <button ng-click=vm.logout()>Logout</button> <button ng-click=vm.switchUser()>Switch User</button> <button ng-click=vm.insertContact()>Insert Contact</button> <button ng-click=vm.syncUp()>Sync Up</button> <button ng-click=vm.createTable()>Create Table</button> <button ng-click=vm.createRecord()>Create Record</button> <button ng-click=vm.retrieveAll()>Retrieve All Records</button> <button ng-click=vm.retrieve()>Retrieve Record</button></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></div></section></section>");
 $templateCache.put("app/layout/ht-top-nav.html","<nav class=\"navbar navbar-fixed-top navbar-inverse\"><div class=navbar-header><a href=\"/\" class=navbar-brand><span class=brand-title>{{vm.navline.title}}</span></a> <a class=\"btn navbar-btn navbar-toggle\" ng-click=\"isCollapsed = !isCollapsed\"><span class=icon-bar></span> <span class=icon-bar></span> <span class=icon-bar></span></a></div><div class=\"navbar-collapse collapse\" uib-collapse=isCollapsed><div class=\"pull-right navbar-logo\"><ul class=\"nav navbar-nav pull-right\"><li><a ng-href={{vm.navline.link}} target=_blank>{{vm.navline.text}}</a></li><li class=\"dropdown dropdown-big\"><a href=http://www.angularjs.org target=_blank><img src=images/AngularJS-small.png></a></li><li><a href=\"http://www.gulpjs.com/\" target=_blank><img src=images/gulp-tiny.png></a></li></ul></div></div></nav>");
 $templateCache.put("app/layout/shell.html","<div ng-controller=\"ShellController as vm\"><header class=clearfix><ht-top-nav navline=vm.navline></ht-top-nav></header><section id=content class=content><div ng-include=\"\'app/layout/sidebar.html\'\"></div><div ui-view class=shuffle-animation></div><div ngplus-overlay ngplus-overlay-delay-in=50 ngplus-overlay-delay-out=700 ngplus-overlay-animation=dissolve-animation><img src=images/busy.gif><div class=\"page-spinner-message overlay-message\">{{vm.busyMessage}}</div></div></section></div>");
 $templateCache.put("app/layout/sidebar.html","<div ng-controller=\"SidebarController as vm\"><ht-sidebar when-done-animating=vm.sidebarReady()><div class=sidebar-filler></div><div class=sidebar-dropdown><a href=#>Menu</a></div><div class=sidebar-inner><div class=sidebar-widget></div><ul class=navi><li class=\"nlightblue fade-selection-animation\" ng-class=vm.isCurrent(r) ng-repeat=\"r in vm.navRoutes\"><a ui-sref={{r.name}} ng-bind-html=r.settings.content></a></li></ul></div></ht-sidebar></div>");

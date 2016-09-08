@@ -3,11 +3,11 @@
 
   angular
     .module('blocks.cache')
-    .provider('cache', cacheProivder);
+    .provider('cache', cacheProvider);
 
-  cacheProvider.$inject = ['$q'];
+  cacheProvider.$inject = ['$qProvider'];
 
-  function cacheProvider($q) {
+  function cacheProvider($qProvider) {
 
     var config = {
         dbName: 'demo.db',
@@ -23,6 +23,18 @@
     CacheHelper.$inject = ['$q'];
     
     function CacheHelper($q) {
+
+        function createPlaceholderQuestionmark(fieldNames) {
+            return fieldNames.map(function() {
+                return '?'
+            }).join(',');
+        }
+
+        function createUpdateQuery(fieldNames) {
+            return fieldNames.map(function(fieldName) {
+                return fieldName + '=?'
+            }).join(',');
+        }
         
         /**
          * Cache constructor
@@ -32,6 +44,7 @@
 
         function Cache(){
             this.db = window.sqlitePlugin.openDatabase({name: config.dbName , location: config.dbLocation});
+            if(!this.db) return new Error('Error creating database');
         }
 
         /**
@@ -46,7 +59,7 @@
             var that = this;
             return $q(function(resolve, reject){
                 that.db.transaction(function(tx) {
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS DemoTable (?) (' + fieldSpec + ')', [tableName],
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS ' + tableName + ' (' + fieldSpec + ')', [],
                     function(tx, result) {
                         console.log('Populated database OK');
                         resolve(result);
@@ -81,7 +94,7 @@
                         reject(error);
                     });
                 });
-            }
+            });
         };
 
         /**
@@ -104,7 +117,7 @@
                         reject(error);
                     });
                 });
-            }
+            });
         };
 
         /**
@@ -116,7 +129,7 @@
         Cache.prototype.retrieve = function(fieldNames, id, tableName) {
             var that = this;
             return $q(function(resolve, reject){
-                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + 'WHERE Id=?';
+                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
                 that.db.transaction(function(tx) {
                     tx.executeSql(query, [id],
                     function(tx, result) {
@@ -127,7 +140,7 @@
                         reject(error);
                     });
                 });
-            }
+            });
         };
 
         /**
@@ -138,7 +151,7 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.save = function(fieldNames, fieldValues, tableName) {
+        Cache.prototype.save = function(fieldNames, fieldValues, id, tableName) {
             var that = this;
             fieldNames = _.concat(fieldNames, '__locally_updated__');
             fieldValues = _.concat(fieldValues, true);
@@ -154,7 +167,7 @@
                         reject(error);
                     });
                 });
-            }
+            });
         };
 
         /**
@@ -179,7 +192,7 @@
                         reject(error);
                     });
                 });
-            }
+            });
         };
 
         return new Cache();

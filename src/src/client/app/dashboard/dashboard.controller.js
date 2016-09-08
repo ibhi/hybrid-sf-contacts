@@ -5,9 +5,9 @@
     .module('app.dashboard')
     .controller('DashboardController', DashboardController);
 
-  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel', '$timeout'];
+  DashboardController.$inject = ['$q', 'dataservice', 'logger', '$cordovaOauth', 'LOGINURL', 'CLIENTID', 'auth', '$scope', 'models', 'viewModel', '$timeout', 'cache'];
   /* @ngInject */
-  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel, $timeout) {
+  function DashboardController($q, dataservice, logger, $cordovaOauth, LOGINURL, CLIENTID, auth, $scope, models, viewModel, $timeout, cache) {
     var vm = this;
     document.addEventListener("deviceready", function () {
       vm.news = {
@@ -420,6 +420,63 @@
         function onErrorRemoveSoup(error) {
           console.log('Error removing soup ', error);
         }
+      }
+
+      var tableName = 'contacts';
+
+      vm.createTable = function() {
+        var fieldSpec = 'Id text primary key, FirstName text, LastName text, Email text'
+        cache.createTable(fieldSpec, tableName).then(function(result) {
+          console.log(result);
+        }, function(error) {
+          console.log(error);
+        });
+
+      };
+
+      var testData = {
+        Id: 'cde',
+        FirstName: 'Ayeesha Siddikka',
+        LastName: 'Ibrahim'
+      };
+
+      var fieldNames = _.keys(testData);
+      var fieldValues = _.values(testData);
+
+
+      vm.createRecord = function() {
+        
+
+        cache.create(fieldNames, fieldValues, tableName).then(function(result) {
+          console.log(result);
+        }, function(error) {
+          console.log(error);
+        });
+
+      };
+
+      vm.retrieveAll = function() {
+        cache.retrieveAll(tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.retrieve = function() {
+        cache.retrieve(fieldNames, 'abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.update = function() {
+        cache.save(fieldNames, 'abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
       }
 
     }, false);
