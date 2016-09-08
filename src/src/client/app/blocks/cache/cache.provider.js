@@ -3,47 +3,36 @@
 
   angular
     .module('blocks.cache')
-    .service('cache', cacheFactory);
+    .provider('cache', cacheProivder);
 
-  cacheFactory.$inject = ['$qProvider'];
+  cacheProvider.$inject = ['$q'];
 
-  function cacheFactory($qProvider) {
-    var cache = {};
+  function cacheProvider($q) {
 
-    // document.addEventListener('deviceready', function() {
+    var config = {
+        dbName: 'demo.db',
+        dbLocation:'default'
+    };
 
-        var db;
+    this.config = function(cfg) {
+        angular.extend(config, cfg);
+    };
+
+    this.$get = CacheHelper;
+
+    CacheHelper.$inject = ['$q'];
+    
+    function CacheHelper($q) {
         
-        function createPlaceholderQuestionmark(fieldNames) {
-            return fieldNames.map(function() {
-                return '?'
-            }).join(',');
-        }
-
-        function createUpdateQuery(fieldNames) {
-            return fieldNames.map(function(fieldName) {
-                return fieldName + '=?'
-            }).join(',');
-        }
-
         /**
-         * Method to initialize database
+         * Cache constructor
          *
-         * @param {String} [dbName] - Name of the DB
-         * @param {String} [dbLocation] - Location of database table
-         * @returns {Promise} - Returns angularjs promise
+         * @class - Cache constructor
         */
 
-        cache.init = function(dbName, dbLocation) {
-            if(!window.sqlitePlugin) return new Error('sqlitePlugin not installed ');
-            if(!dbName) dbName = 'demo.db';
-            if(!dbLocation) dbLocation = 'default';
-            db = window.sqlitePlugin.openDatabase({name: dbName, location: dbLocation});
-            if(!db) return new Error('DB Creation error');
-        };
-
-        
-
+        function Cache(){
+            this.db = window.sqlitePlugin.openDatabase({name: config.dbName , location: config.dbLocation});
+        }
 
         /**
          * Method to create tables
@@ -52,9 +41,11 @@
          * @param {String} tableName - Table name
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.createTable = function(fieldSpec, tableName) {
+
+        Cache.prototype.createTable = function(fieldSpec, tableName) {
+            var that = this;
             return $q(function(resolve, reject){
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql('CREATE TABLE IF NOT EXISTS DemoTable (?) (' + fieldSpec + ')', [tableName],
                     function(tx, result) {
                         console.log('Populated database OK');
@@ -65,7 +56,7 @@
                     });
                 });
             });
-        }
+        };
 
         /**
          * Method to create a new record
@@ -75,11 +66,12 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.create = function(fieldNames, fieldValues, tableName) {
+        Cache.prototype.create = function(fieldNames, fieldValues, tableName) {
+            var that = this;
             return $q(function(resolve, reject){
                 var query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
                     ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql(query, fieldValues,
                     function(tx, result) {
                         console.log('Record created ', result);
@@ -90,7 +82,7 @@
                     });
                 });
             }
-        }
+        };
 
         /**
          * Method to get all records
@@ -98,10 +90,11 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.retrieveAll = function(tableName) {
+        Cache.prototype.retrieveAll = function(tableName) {
+            var that = this;
             return $q(function(resolve, reject){
                 var query = 'SELECT * FROM ' + tableName;
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql(query, [],
                     function(tx, result) {
                         console.log('All records', result);
@@ -112,7 +105,7 @@
                     });
                 });
             }
-        }
+        };
 
         /**
          * Method to get single record
@@ -120,10 +113,11 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.retrieve = function(fieldNames, id, tableName) {
+        Cache.prototype.retrieve = function(fieldNames, id, tableName) {
+            var that = this;
             return $q(function(resolve, reject){
                 var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + 'WHERE Id=?';
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql(query, [id],
                     function(tx, result) {
                         console.log('Record fetched ', result);
@@ -134,7 +128,7 @@
                     });
                 });
             }
-        }
+        };
 
         /**
          * Method to update a record with unique Id
@@ -144,12 +138,13 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.save = function(fieldNames, fieldValues, tableName) {
+        Cache.prototype.save = function(fieldNames, fieldValues, tableName) {
+            var that = this;
             fieldNames = _.concat(fieldNames, '__locally_updated__');
             fieldValues = _.concat(fieldValues, true);
             return $q(function(resolve, reject){
                 var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql(query, fieldValues,
                     function(tx, result) {
                         console.log('Record updated ', result);
@@ -160,7 +155,7 @@
                     });
                 });
             }
-        }
+        };
 
         /**
          * Method to delete a record with unique Id
@@ -170,10 +165,11 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        cache.delete = function(id, tableName) {
+        Cache.prototype.delete = function(id, tableName) {
+            var that = this;
             return $q(function(resolve, reject){
                 var query = 'DELETE FROM ' + tableName + ' WHERE Id=?';
-                db.transaction(function(tx) {
+                that.db.transaction(function(tx) {
                     tx.executeSql(query, [id],
                     function(tx, result) {
                         console.log('Record deleted ', result);
@@ -184,15 +180,13 @@
                     });
                 });
             }
-        }
+        };
 
+        return new Cache();
+    }
+  
 
-
-
-        return cache;
-    // });
-    
-  }
+    }
 
 
 })();
