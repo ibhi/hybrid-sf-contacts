@@ -607,10 +607,11 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.save = function(fieldNames, fieldValues, tableName) {
+        Cache.prototype.save = function(fieldNames, fieldValues, id, tableName) {
             var that = this;
-            fieldNames = _.concat(fieldNames, '__locally_updated__');
-            fieldValues = _.concat(fieldValues, true);
+            // fieldNames = _.concat(fieldNames, '__locally_updated__');
+            // fieldValues = _.concat(fieldValues, id);
+            fieldValues.push(id);
             return $q(function(resolve, reject){
                 var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
                 that.db.transaction(function(tx) {
@@ -645,6 +646,30 @@
                         resolve(result);
                     }, function(error) {
                         console.log('Delete ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to delete a record with unique Id
+         *
+         * @param {Array} fieldNames - Name of fields to perform the transaction
+         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.query = function(query, fieldValues, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, fieldValues,
+                    function(tx, result) {
+                        console.log('Query completed ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Query ERROR: ' + error.message);
                         reject(error);
                     });
                 });
@@ -1814,6 +1839,24 @@
         });
       }
 
+      vm.update = function() {
+        var fieldNames = ['FirstName'];
+        var fieldValues = ['John'];
+        cache.save(fieldNames, fieldValues, 'abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.delete = function() {
+        cache.delete('abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
     }, false);
   }
 })();
@@ -2070,7 +2113,7 @@
 
 angular.module("app.core").run(["$templateCache", function($templateCache) {$templateCache.put("app/admin/admin.html","<section class=mainbar><section class=matter><div class=container><div class=row><div class=\"widget wviolet\"><div ht-widget-header title={{vm.title}}></div><div class=\"widget-content user\"><h3>TODO: Implement Your Features</h3></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></section></section>");
 $templateCache.put("app/core/404.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=bred><div class=pull-left><i class=\"fa fa-warning\"></i></div><div class=\"datas-text pull-right\"><a><span class=bold>404</span></a>Page Not Found</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=\"widget wblue\"><div ht-widget-header title=\"Page Not Found\" allow-collapse=true></div><div class=\"widget-content text-center text-info\"><div class=container>No soup for you!</div></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></section></section>");
-$templateCache.put("app/dashboard/dashboard.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=blightblue><div class=pull-left><i class=\"fa fa-plane\"></i></div><div class=\"datas-text pull-right\"><span class=bold>May 18 - 19, 2015</span> Castle Resort, Neverland</div><div class=clearfix></div></li><li class=borange><div class=pull-left><i class=\"fa fa-envelope\"></i></div><div class=\"datas-text pull-right\"><span class=bold>{{vm.messageCount}}</span> Messages</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=col-md-6><div class=\"widget wviolet\"><div ht-widget-header title=People allow-collapse=true></div><div class=\"widget-content text-center text-info\"><ul><li ng-repeat=\"contact in vm.contacts track by $index\">{{contact.attributes.FirstName}}</li></ul></div><div class=widget-foot><div class=clearfix></div></div></div></div><div class=col-md-6><div class=\"widget wgreen\"><div ht-widget-header title={{vm.news.title}} allow-collapse=true></div><div class=\"widget-content text-center text-info\"><small>{{vm.news.description}}</small> <button ng-click=vm.login()>Login</button> <button ng-click=vm.showSmartStoreInspector()>Show Smart Store Inspector</button> <button ng-click=vm.syncDown()>Sync Down</button> <button ng-click=vm.removeSoup()>Reomve Soup</button> <button ng-click=vm.logout()>Logout</button> <button ng-click=vm.switchUser()>Switch User</button> <button ng-click=vm.insertContact()>Insert Contact</button> <button ng-click=vm.syncUp()>Sync Up</button> <button ng-click=vm.createTable()>Create Table</button> <button ng-click=vm.createRecord()>Create Record</button> <button ng-click=vm.retrieveAll()>Retrieve All Records</button> <button ng-click=vm.retrieve()>Retrieve Record</button></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></div></section></section>");
+$templateCache.put("app/dashboard/dashboard.html","<section id=dashboard-view class=mainbar><section class=matter><div class=container><div class=row><div class=col-md-12><ul class=today-datas><li class=blightblue><div class=pull-left><i class=\"fa fa-plane\"></i></div><div class=\"datas-text pull-right\"><span class=bold>May 18 - 19, 2015</span> Castle Resort, Neverland</div><div class=clearfix></div></li><li class=borange><div class=pull-left><i class=\"fa fa-envelope\"></i></div><div class=\"datas-text pull-right\"><span class=bold>{{vm.messageCount}}</span> Messages</div><div class=clearfix></div></li></ul></div></div><div class=row><div class=col-md-6><div class=\"widget wviolet\"><div ht-widget-header title=People allow-collapse=true></div><div class=\"widget-content text-center text-info\"><ul><li ng-repeat=\"contact in vm.contacts track by $index\">{{contact.attributes.FirstName}}</li></ul></div><div class=widget-foot><div class=clearfix></div></div></div></div><div class=col-md-6><div class=\"widget wgreen\"><div ht-widget-header title={{vm.news.title}} allow-collapse=true></div><div class=\"widget-content text-center text-info\"><small>{{vm.news.description}}</small> <button ng-click=vm.login()>Login</button> <button ng-click=vm.showSmartStoreInspector()>Show Smart Store Inspector</button> <button ng-click=vm.syncDown()>Sync Down</button> <button ng-click=vm.removeSoup()>Reomve Soup</button> <button ng-click=vm.logout()>Logout</button> <button ng-click=vm.switchUser()>Switch User</button> <button ng-click=vm.insertContact()>Insert Contact</button> <button ng-click=vm.syncUp()>Sync Up</button> <button ng-click=vm.createTable()>Create Table</button> <button ng-click=vm.createRecord()>Create Record</button> <button ng-click=vm.retrieveAll()>Retrieve All Records</button> <button ng-click=vm.retrieve()>Retrieve Record</button> <button ng-click=vm.update()>Update Record</button> <button ng-click=vm.delete()>Delete Record</button></div><div class=widget-foot><div class=clearfix></div></div></div></div></div></div></section></section>");
 $templateCache.put("app/layout/ht-top-nav.html","<nav class=\"navbar navbar-fixed-top navbar-inverse\"><div class=navbar-header><a href=\"/\" class=navbar-brand><span class=brand-title>{{vm.navline.title}}</span></a> <a class=\"btn navbar-btn navbar-toggle\" ng-click=\"isCollapsed = !isCollapsed\"><span class=icon-bar></span> <span class=icon-bar></span> <span class=icon-bar></span></a></div><div class=\"navbar-collapse collapse\" uib-collapse=isCollapsed><div class=\"pull-right navbar-logo\"><ul class=\"nav navbar-nav pull-right\"><li><a ng-href={{vm.navline.link}} target=_blank>{{vm.navline.text}}</a></li><li class=\"dropdown dropdown-big\"><a href=http://www.angularjs.org target=_blank><img src=images/AngularJS-small.png></a></li><li><a href=\"http://www.gulpjs.com/\" target=_blank><img src=images/gulp-tiny.png></a></li></ul></div></div></nav>");
 $templateCache.put("app/layout/shell.html","<div ng-controller=\"ShellController as vm\"><header class=clearfix><ht-top-nav navline=vm.navline></ht-top-nav></header><section id=content class=content><div ng-include=\"\'app/layout/sidebar.html\'\"></div><div ui-view class=shuffle-animation></div><div ngplus-overlay ngplus-overlay-delay-in=50 ngplus-overlay-delay-out=700 ngplus-overlay-animation=dissolve-animation><img src=images/busy.gif><div class=\"page-spinner-message overlay-message\">{{vm.busyMessage}}</div></div></section></div>");
 $templateCache.put("app/layout/sidebar.html","<div ng-controller=\"SidebarController as vm\"><ht-sidebar when-done-animating=vm.sidebarReady()><div class=sidebar-filler></div><div class=sidebar-dropdown><a href=#>Menu</a></div><div class=sidebar-inner><div class=sidebar-widget></div><ul class=navi><li class=\"nlightblue fade-selection-animation\" ng-class=vm.isCurrent(r) ng-repeat=\"r in vm.navRoutes\"><a ui-sref={{r.name}} ng-bind-html=r.settings.content></a></li></ul></div></ht-sidebar></div>");

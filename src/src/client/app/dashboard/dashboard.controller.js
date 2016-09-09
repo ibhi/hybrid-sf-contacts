@@ -472,7 +472,17 @@
       }
 
       vm.update = function() {
-        cache.save(fieldNames, 'abc', tableName).then(function(result) {
+        var fieldNames = ['FirstName'];
+        var fieldValues = ['John'];
+        cache.save(fieldNames, fieldValues, 'abc', tableName).then(function(result) {
+          console.log(result.rows.item(0), result.rows.item(1));
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.delete = function() {
+        cache.delete('abc', tableName).then(function(result) {
           console.log(result.rows.item(0), result.rows.item(1));
         }, function(error) {
           console.log(error);

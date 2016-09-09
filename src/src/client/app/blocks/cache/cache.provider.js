@@ -153,8 +153,9 @@
         */
         Cache.prototype.save = function(fieldNames, fieldValues, id, tableName) {
             var that = this;
-            fieldNames = _.concat(fieldNames, '__locally_updated__');
-            fieldValues = _.concat(fieldValues, true);
+            // fieldNames = _.concat(fieldNames, '__locally_updated__');
+            // fieldValues = _.concat(fieldValues, id);
+            fieldValues.push(id);
             return $q(function(resolve, reject){
                 var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
                 that.db.transaction(function(tx) {
@@ -189,6 +190,30 @@
                         resolve(result);
                     }, function(error) {
                         console.log('Delete ERROR: ' + error.message);
+                        reject(error);
+                    });
+                });
+            });
+        };
+
+        /**
+         * Method to delete a record with unique Id
+         *
+         * @param {Array} fieldNames - Name of fields to perform the transaction
+         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
+         * @param {String} tableName - Name of table to perform the transaction
+         * @returns {Promise} - Returns angularjs promise
+        */
+        Cache.prototype.query = function(query, fieldValues, tableName) {
+            var that = this;
+            return $q(function(resolve, reject){
+                that.db.transaction(function(tx) {
+                    tx.executeSql(query, fieldValues,
+                    function(tx, result) {
+                        console.log('Query completed ', result);
+                        resolve(result);
+                    }, function(error) {
+                        console.log('Query ERROR: ' + error.message);
                         reject(error);
                     });
                 });
