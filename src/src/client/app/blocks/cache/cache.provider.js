@@ -25,15 +25,28 @@
     function CacheHelper($q) {
 
         function createPlaceholderQuestionmark(fieldNames) {
-            return fieldNames.map(function() {
-                return '?'
-            }).join(',');
+          return fieldNames.map(function() {
+              return '?'
+          }).join(',');
         }
 
         function createUpdateQuery(fieldNames) {
-            return fieldNames.map(function(fieldName) {
-                return fieldName + '=?'
-            }).join(',');
+          return fieldNames.map(function(fieldName) {
+              return fieldName + '=?'
+          }).join(',');
+        }
+
+        function prepareResult(response) {
+          var result = [];
+          if(response.hasOwnProperty('rows')) {
+            var len = response.rows.length;
+            var i;
+
+            for ( i = 0; i < len; i++ ) {
+              result.push(response.rows.item(i));
+            } // end for
+          }
+          return result;
         }
         
         /**
@@ -62,7 +75,7 @@
                     tx.executeSql('CREATE TABLE IF NOT EXISTS ' + tableName + ' (' + fieldSpec + ')', [],
                     function(tx, result) {
                         console.log('Populated database OK');
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Transaction ERROR: ' + error.message);
                         reject(error);
@@ -88,7 +101,7 @@
                     tx.executeSql(query, fieldValues,
                     function(tx, result) {
                         console.log('Record created ', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Create ERROR: ' + error.message);
                         reject(error);
@@ -111,7 +124,7 @@
                     tx.executeSql(query, [],
                     function(tx, result) {
                         console.log('All records', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Insert ERROR: ' + error.message);
                         reject(error);
@@ -134,7 +147,7 @@
                     tx.executeSql(query, [id],
                     function(tx, result) {
                         console.log('Record fetched ', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Fetch ERROR: ' + error.message);
                         reject(error);
@@ -162,7 +175,7 @@
                     tx.executeSql(query, fieldValues,
                     function(tx, result) {
                         console.log('Record updated ', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Update ERROR: ' + error.message);
                         reject(error);
@@ -187,7 +200,7 @@
                     tx.executeSql(query, [id],
                     function(tx, result) {
                         console.log('Record deleted ', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Delete ERROR: ' + error.message);
                         reject(error);
@@ -211,7 +224,7 @@
                     tx.executeSql(query, fieldValues,
                     function(tx, result) {
                         console.log('Query completed ', result);
-                        resolve(result);
+                        resolve(prepareResult(result));
                     }, function(error) {
                         console.log('Query ERROR: ' + error.message);
                         reject(error);

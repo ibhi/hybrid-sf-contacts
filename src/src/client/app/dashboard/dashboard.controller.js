@@ -457,7 +457,7 @@
 
       vm.retrieveAll = function() {
         cache.retrieveAll(tableName).then(function(result) {
-          console.log(result.rows.item(0), result.rows.item(1));
+          console.log(result);
         }, function(error) {
           console.log(error);
         });
@@ -465,7 +465,7 @@
 
       vm.retrieve = function() {
         cache.retrieve(fieldNames, 'abc', tableName).then(function(result) {
-          console.log(result.rows.item(0), result.rows.item(1));
+          console.log(result);
         }, function(error) {
           console.log(error);
         });
@@ -475,7 +475,7 @@
         var fieldNames = ['FirstName'];
         var fieldValues = ['John'];
         cache.save(fieldNames, fieldValues, 'abc', tableName).then(function(result) {
-          console.log(result.rows.item(0), result.rows.item(1));
+          console.log(result);
         }, function(error) {
           console.log(error);
         });
@@ -483,7 +483,7 @@
 
       vm.delete = function() {
         cache.delete('abc', tableName).then(function(result) {
-          console.log(result.rows.item(0), result.rows.item(1));
+          console.log(result);
         }, function(error) {
           console.log(error);
         });
