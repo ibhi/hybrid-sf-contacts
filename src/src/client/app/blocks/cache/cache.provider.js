@@ -78,7 +78,7 @@
         Cache.prototype.onError = function(error) {
           console.log('Transaction Error: ', error);
           reject(error);
-        }
+        };
 
         Cache.prototype.exec = function(query, params) {
           var self = this;
@@ -187,19 +187,19 @@
             query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE ' + where;
             return self.exec(query, fieldValues);
 
-            return $q(function(resolve, reject){
-                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
-                self.db.transaction(function(tx) {
-                    tx.executeSql(query, [id],
-                    function(tx, result) {
-                        console.log('Record fetched ', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Fetch ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
-            });
+            // return $q(function(resolve, reject){
+            //     var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
+            //     self.db.transaction(function(tx) {
+            //         tx.executeSql(query, [id],
+            //         function(tx, result) {
+            //             console.log('Record fetched ', result);
+            //             resolve(prepareResult(result));
+            //         }, function(error) {
+            //             console.log('Fetch ERROR: ' + error.message);
+            //             reject(error);
+            //         });
+            //     });
+            // });
         };
         
         

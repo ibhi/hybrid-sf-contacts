@@ -29,8 +29,8 @@
           console.log('Auth successfull');
           // forcetkClient = client;
           // initSmartStore();
-          models.init();
-          initViewModel();
+          // models.init();
+          // initViewModel();
         }, function(error) {
           console.error('Auth error', error)
         });
@@ -422,11 +422,28 @@
         }
       }
 
-      var tableName = 'contacts';
+      var tableName = 'accounts';
 
       vm.createTable = function() {
-        var fieldSpec = 'Id text primary key, FirstName text, LastName text, Email text'
-        cache.createTable(fieldSpec, tableName).then(function(result) {
+        // 'Id text primary key, FirstName text, LastName text, Email text'
+        var fieldSpec = {
+          Id: {
+            type: 'TEXT',
+            primary: true,
+            notnull: true,
+            unique: true
+          },
+          FirstName: {
+            type: 'TEXT'
+          },
+          LastName: {
+            type: 'TEXT'
+          },
+          Email: {
+            type: 'TEXT'
+          }
+        }
+        cache.createTable(tableName, fieldSpec, ).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);
@@ -437,7 +454,8 @@
       var testData = {
         Id: 'cde',
         FirstName: 'Ayeesha Siddikka',
-        LastName: 'Ibrahim'
+        LastName: 'Ibrahim',
+        Email: 'ayeesha@gmail.com'
       };
 
       var fieldNames = _.keys(testData);
@@ -447,7 +465,7 @@
       vm.createRecord = function() {
         
 
-        cache.create(fieldNames, fieldValues, tableName).then(function(result) {
+        cache.upsert(tableName, testData).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);

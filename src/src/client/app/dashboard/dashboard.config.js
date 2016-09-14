@@ -8,7 +8,7 @@
 
   function dashboardConfig(cacheProvider) {
   	var config = {
-      dbName: 'dashboard.db',
+      dbName: 'dashboard',
       dbLocation:'default'
     };
   	cacheProvider.config(config);

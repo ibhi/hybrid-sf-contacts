@@ -32,7 +32,8 @@
     "ng-cordova-oauth": "^0.2.10",
     "jsforce": "^1.7.0",
     "forcetk.mobilesdk": "*",
-    "smartsync": "*"
+    "smartsync": "*",
+    "lodash": "^4.15.0"
   },
   "resolutions": {
     "angular": "1.5.3",
