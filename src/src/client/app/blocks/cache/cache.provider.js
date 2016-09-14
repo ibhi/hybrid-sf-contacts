@@ -56,8 +56,12 @@
         */
 
         function Cache(){
-            this.db = window.sqlitePlugin.openDatabase({name: config.dbName + '.db' , location: config.dbLocation});
-            if(!this.db) return new Error('Error creating database');
+            
+        }
+
+        Cache.prototype.init = function() {
+          this.db = window.sqlitePlugin.openDatabase({name: config.dbName + '.db' , location: config.dbLocation});
+          if(!this.db) return new Error('Error creating database');
         }
 
         /**
@@ -71,12 +75,12 @@
         // Cache.prototype.db = null;
 
         Cache.prototype.onSuccess = function(tx, result) {
-          console.log('Transaction ' + tx + ' completed');
+          console.log('Transaction completed ', tx);
           resolve(prepareResult(result));
         };
 
-        Cache.prototype.onError = function(error) {
-          console.log('Transaction Error: ', error);
+        Cache.prototype.onError = function(tx, error) {
+          console.log('Transaction Error: ' + error.message);
           reject(error);
         };
 
@@ -127,9 +131,18 @@
                   (ref ? (' REFERENCES ' + ref) : '');
               query += columnDec;
             }
-            query += ');';
+            query += ')';
 
-            return self.exec(query, null);
+            return $q(function(resolve, reject){
+              self.db.transaction(function(tx) {
+                  tx.executeSql(query, [], function(tx, result) {
+                    console.log(tx, result);
+                    resolve(result);
+                  }, function(tx, error) {
+                    reject(error);
+                  });
+              });
+            });
         };
 
         Cache.prototype.upsert = function(tableName, tableData, keyFields) {
@@ -140,7 +153,7 @@
             var where;
             var valueFieldsValues;
             var keyFieldsValues;
-            var fieldValues;
+            var fieldValues = [];
 
             var valueFields = _.difference(fieldNames, keyFields);
 
@@ -152,7 +165,7 @@
               return tableData[keyField];
             });
 
-            fieldValues=_.concat(valueFieldsValues, keyFieldsValues);
+            fieldValues = _.concat(valueFieldsValues, keyFieldsValues);
 
             if(keyFields.length > 0) { //update
               

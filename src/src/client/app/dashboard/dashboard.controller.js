@@ -424,6 +424,8 @@
 
       var tableName = 'accounts';
 
+      cache.init();
+
       vm.createTable = function() {
         // 'Id text primary key, FirstName text, LastName text, Email text'
         var fieldSpec = {
