@@ -429,9 +429,7 @@
         var fieldSpec = {
           Id: {
             type: 'TEXT',
-            primary: true,
-            notnull: true,
-            unique: true
+            primary: true
           },
           FirstName: {
             type: 'TEXT'
@@ -443,7 +441,7 @@
             type: 'TEXT'
           }
         }
-        cache.createTable(tableName, fieldSpec, ).then(function(result) {
+        cache.createTable(tableName, fieldSpec).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);

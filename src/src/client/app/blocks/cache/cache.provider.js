@@ -68,7 +68,7 @@
          * @returns {Promise} - Returns angularjs promise
         */
 
-        Cache.prototype.db = null;
+        // Cache.prototype.db = null;
 
         Cache.prototype.onSuccess = function(tx, result) {
           console.log('Transaction ' + tx + ' completed');
@@ -154,7 +154,7 @@
 
             fieldValues=_.concat(valueFieldsValues, keyFieldsValues);
 
-            if(keyFields !== null || typeof keyFields !== 'undefined') { //update
+            if(keyFields.length > 0) { //update
               
               if (Array.isArray(keyFields)) {
                 where = createUpdateQuery(keyFields);
