@@ -10,7 +10,7 @@
   function cacheProvider($qProvider) {
 
     var config = {
-        dbName: 'demo.db',
+        dbName: 'demo',
         dbLocation:'default'
     };
 
@@ -56,7 +56,7 @@
         */
 
         function Cache(){
-            this.db = window.sqlitePlugin.openDatabase({name: config.dbName , location: config.dbLocation});
+            this.db = window.sqlitePlugin.openDatabase({name: config.dbName + '.db' , location: config.dbLocation});
             if(!this.db) return new Error('Error creating database');
         }
 
@@ -68,48 +68,141 @@
          * @returns {Promise} - Returns angularjs promise
         */
 
-        Cache.prototype.createTable = function(fieldSpec, tableName) {
-            var that = this;
-            return $q(function(resolve, reject){
-                that.db.transaction(function(tx) {
-                    tx.executeSql('CREATE TABLE IF NOT EXISTS ' + tableName + ' (' + fieldSpec + ')', [],
-                    function(tx, result) {
-                        console.log('Populated database OK');
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Transaction ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
+        Cache.prototype.db = null;
+
+        Cache.prototype.onSuccess = function(tx, result) {
+          console.log('Transaction ' + tx + ' completed');
+          resolve(prepareResult(result));
+        };
+
+        Cache.prototype.onError = function(error) {
+          console.log('Transaction Error: ', error);
+          reject(error);
+        }
+
+        Cache.prototype.exec = function(query, params) {
+          var self = this;
+          return $q(function(resolve, reject){
+            self.db.transaction(function(tx) {
+                tx.executeSql(query, params, self.onSuccess, self.onError);
             });
+          });
+        };
+
+        /*
+        db.createTable(tableName, {
+                'id': {
+                    type: 'INTEGER',
+                    primary: true,
+                    notnull: true
+                },
+                'name': {
+                    type: 'TEXT',
+                    notnull: true,
+                    unique: true,
+                    default: "'John Doe'"
+                },
+                'city_id': {
+                    type: 'INTEGER',
+                    notnull: true,
+                    ref: 'cities'
+                }
+            });
+        Id text primary key, FirstName text, LastName text, Email text
+        */
+
+        Cache.prototype.createTable = function(tableName, columns) {
+            var self = this;
+            var query = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' (';
+            var first = true;
+            for (var key in columns) {
+              var deflt = columns[key]['default'],
+                  ref = columns[key].ref;
+              var columnDec = (first ? (first = false, '') : ',') + key +
+                  (columns[key].type ? ' ' + columns[key].type : '') +
+                  (columns[key].primary ? ' PRIMARY KEY' : '') + 
+                  (columns[key].unique ? ' UNIQUE' : '') +
+                  (columns[key].notnull ? ' NOT NULL' : '') +
+                  (deflt ? (' DEFAULT ' + deflt) : '') + 
+                  (ref ? (' REFERENCES ' + ref) : '');
+              query += columnDec;
+            }
+            query += ');';
+
+            return self.exec(query, null);
+        };
+
+        Cache.prototype.upsert = function(tableName, tableData, keyFields) {
+            var self = this;
+            keyFields = keyFields || [];
+            var query;
+            var fieldNames = Object.keys(tableData);
+            var where;
+            var valueFieldsValues;
+            var keyFieldsValues;
+            var fieldValues;
+
+            var valueFields = _.difference(fieldNames, keyFields);
+
+            valueFieldsValues = valueFields.map(function(valueField) {
+              return tableData[valueField];
+            });
+
+            keyFieldsValues = keyFields.map(function(keyField) {
+              return tableData[keyField];
+            });
+
+            fieldValues=_.concat(valueFieldsValues, keyFieldsValues);
+
+            if(keyFields !== null || typeof keyFields !== 'undefined') { //update
+              
+              if (Array.isArray(keyFields)) {
+                where = createUpdateQuery(keyFields);
+              }
+              query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(valueFields) + ' WHERE ' + where;
+
+              
+            } else { //insert
+
+              query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
+                    ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
+            }
+            
+
+            return self.exec(query, fieldValues);
         };
 
         /**
-         * Method to create a new record
+         * Method to get single record
          *
-         * @param {Array} fieldNames - Name of fields to perform the transaction
-         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.create = function(fieldNames, fieldValues, tableName) {
-            var that = this;
+        Cache.prototype.select = function(tableName, tableData, keyFields) {
+            var self = this;
+            var query;
+            var fieldNames = Object.keys(tableData);
+            var where;
+
+            query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE ' + where;
+            return self.exec(query, fieldValues);
+
             return $q(function(resolve, reject){
-                var query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
-                    ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, fieldValues,
+                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
+                self.db.transaction(function(tx) {
+                    tx.executeSql(query, [id],
                     function(tx, result) {
-                        console.log('Record created ', result);
+                        console.log('Record fetched ', result);
                         resolve(prepareResult(result));
                     }, function(error) {
-                        console.log('Create ERROR: ' + error.message);
+                        console.log('Fetch ERROR: ' + error.message);
                         reject(error);
                     });
                 });
             });
         };
-
+        
+        
         /**
          * Method to get all records
          *
@@ -133,28 +226,7 @@
             });
         };
 
-        /**
-         * Method to get single record
-         *
-         * @param {String} tableName - Name of table to perform the transaction
-         * @returns {Promise} - Returns angularjs promise
-        */
-        Cache.prototype.retrieve = function(fieldNames, id, tableName) {
-            var that = this;
-            return $q(function(resolve, reject){
-                var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, [id],
-                    function(tx, result) {
-                        console.log('Record fetched ', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Fetch ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
-            });
-        };
+        
 
         /**
          * Method to update a record with unique Id
