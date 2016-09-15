@@ -452,10 +452,10 @@
       };
 
       var testData = {
-        Id: 'cde',
-        FirstName: 'Ayeesha Siddikka',
-        LastName: 'Ibrahim',
-        Email: 'ayeesha@gmail.com'
+        Id: 'gef',
+        FirstName: 'Iron Man',
+        LastName: 'Man',
+        Email: 'ironman@gmail.com'
       };
 
       var fieldNames = _.keys(testData);
@@ -474,7 +474,7 @@
       };
 
       vm.retrieveAll = function() {
-        cache.retrieveAll(tableName).then(function(result) {
+        cache.selectAll(tableName).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);
@@ -482,7 +482,14 @@
       }
 
       vm.retrieve = function() {
-        cache.retrieve(fieldNames, 'abc', tableName).then(function(result) {
+        var testData = {
+          Id: null,
+          FirstName: 'Test Man',
+          LastName: 'Man',
+          Email: null
+        };
+
+        cache.select(tableName, testData, ['FirstName', 'LastName']).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);
@@ -490,9 +497,13 @@
       }
 
       vm.update = function() {
-        var fieldNames = ['FirstName'];
-        var fieldValues = ['John'];
-        cache.save(fieldNames, fieldValues, 'abc', tableName).then(function(result) {
+        var testData = {
+          Id: 'gef',
+          FirstName: 'Test Man',
+          LastName: 'Man',
+          Email: 'testman@gmail.com'
+        };
+        cache.upsert(tableName, testData, ['FirstName', 'LastName']).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);
@@ -500,7 +511,27 @@
       }
 
       vm.delete = function() {
-        cache.delete('abc', tableName).then(function(result) {
+        var testData = {
+          Id: 'gef'
+        };
+        cache.delete(tableName, testData, ['Id']).then(function(result) {
+          console.log(result);
+        }, function(error) {
+          console.log(error);
+        });
+      }
+
+      vm.bulkUpsert = function() {
+        var testData = [{
+          Id: 'cde',
+          FirstName: 'Ayeesha Siddikka',
+          LastName: 'Ibrahim'
+        },{
+          Id: 'adf',
+          FirstName: 'Ayeesha Siddikka',
+          LastName: 'Ibrahim'
+        }];
+        cache.bulkUpsert(tableName, testData, ['Id']).then(function(result) {
           console.log(result);
         }, function(error) {
           console.log(error);

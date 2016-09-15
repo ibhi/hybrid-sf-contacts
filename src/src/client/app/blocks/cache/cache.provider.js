@@ -36,6 +36,12 @@
           }).join(',');
         }
 
+        function whereQuery(fieldNames) {
+          return fieldNames.map(function(fieldName) {
+              return fieldName + '=?'
+          }).join(' AND ');
+        }
+
         function prepareResult(response) {
           var result = [];
           if(response.hasOwnProperty('rows')) {
@@ -72,23 +78,18 @@
          * @returns {Promise} - Returns angularjs promise
         */
 
-        // Cache.prototype.db = null;
-
-        Cache.prototype.onSuccess = function(tx, result) {
-          console.log('Transaction completed ', tx);
-          resolve(prepareResult(result));
-        };
-
-        Cache.prototype.onError = function(tx, error) {
-          console.log('Transaction Error: ' + error.message);
-          reject(error);
-        };
-
         Cache.prototype.exec = function(query, params) {
           var self = this;
           return $q(function(resolve, reject){
             self.db.transaction(function(tx) {
-                tx.executeSql(query, params, self.onSuccess, self.onError);
+              tx.executeSql(query, params, function(tx, result) {
+                console.log('Transaction completed ', tx, result, prepareResult(result));
+                console.log(resolve);
+                resolve(prepareResult(result));
+              }, function(tx, error) {
+                console.log('Transaction Error: ' + error.message);
+                reject(error);
+              });
             });
           });
         };
@@ -170,7 +171,7 @@
             if(keyFields.length > 0) { //update
               
               if (Array.isArray(keyFields)) {
-                where = createUpdateQuery(keyFields);
+                where = whereQuery(keyFields);
               }
               query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(valueFields) + ' WHERE ' + where;
 
@@ -178,7 +179,7 @@
             } else { //insert
 
               query = 'INSERT INTO ' + tableName + ' (' + fieldNames.join(',') + ') ' + 
-                    ' VALUES(' + createPlaceholderQuestionmark(fieldNames) + ')';
+                    ' VALUES (' + createPlaceholderQuestionmark(fieldNames) + ')';
             }
             
 
@@ -196,23 +197,17 @@
             var query;
             var fieldNames = Object.keys(tableData);
             var where;
+            var keyFieldsValues;
+
+            keyFieldsValues = keyFields.map(function(keyField) {
+              return tableData[keyField];
+            });
+
+            where = whereQuery(keyFields);
 
             query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE ' + where;
-            return self.exec(query, fieldValues);
+            return self.exec(query, keyFieldsValues);
 
-            // return $q(function(resolve, reject){
-            //     var query = 'SELECT ' + fieldNames.join(',') + ' FROM ' + tableName + ' WHERE Id=?';
-            //     self.db.transaction(function(tx) {
-            //         tx.executeSql(query, [id],
-            //         function(tx, result) {
-            //             console.log('Record fetched ', result);
-            //             resolve(prepareResult(result));
-            //         }, function(error) {
-            //             console.log('Fetch ERROR: ' + error.message);
-            //             reject(error);
-            //         });
-            //     });
-            // });
         };
         
         
@@ -222,51 +217,37 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.retrieveAll = function(tableName) {
-            var that = this;
-            return $q(function(resolve, reject){
-                var query = 'SELECT * FROM ' + tableName;
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, [],
-                    function(tx, result) {
-                        console.log('All records', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Insert ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
-            });
+        Cache.prototype.selectAll = function(tableName) {
+            var self = this;
+            var query = 'SELECT * FROM ' + tableName;
+            return self.exec(query, []);
         };
 
-        
 
         /**
-         * Method to update a record with unique Id
+         * Method to delete a record with unique Id
          *
          * @param {Array} fieldNames - Name of fields to perform the transaction
          * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.save = function(fieldNames, fieldValues, id, tableName) {
-            var that = this;
-            // fieldNames = _.concat(fieldNames, '__locally_updated__');
-            // fieldValues = _.concat(fieldValues, id);
-            fieldValues.push(id);
-            return $q(function(resolve, reject){
-                var query = 'UPDATE ' + tableName + ' SET ' +  createUpdateQuery(fieldNames) + ' WHERE Id=?';
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, fieldValues,
-                    function(tx, result) {
-                        console.log('Record updated ', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Update ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
+        Cache.prototype.delete = function(tableName, tableData, keyFields) {
+            var self = this;
+            var query;
+            var fieldNames = Object.keys(tableData);
+            var where;
+            var keyFieldsValues;
+
+            keyFieldsValues = keyFields.map(function(keyField) {
+              return tableData[keyField];
             });
+
+            where = whereQuery(keyFields);
+
+            query = 'DELETE FROM ' + tableName + ' WHERE ' + where;
+
+            return self.exec(query, keyFieldsValues);
         };
 
         /**
@@ -277,45 +258,18 @@
          * @param {String} tableName - Name of table to perform the transaction
          * @returns {Promise} - Returns angularjs promise
         */
-        Cache.prototype.delete = function(id, tableName) {
-            var that = this;
-            return $q(function(resolve, reject){
-                var query = 'DELETE FROM ' + tableName + ' WHERE Id=?';
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, [id],
-                    function(tx, result) {
-                        console.log('Record deleted ', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Delete ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
-            });
+        Cache.prototype.query = function(query, fieldValues) {
+            var self = this;
+            self.exec(query, fieldValues);
         };
 
-        /**
-         * Method to delete a record with unique Id
-         *
-         * @param {Array} fieldNames - Name of fields to perform the transaction
-         * @param {Array} fieldValues - Value of fields to perform the transaction including the Id
-         * @param {String} tableName - Name of table to perform the transaction
-         * @returns {Promise} - Returns angularjs promise
-        */
-        Cache.prototype.query = function(query, fieldValues, tableName) {
-            var that = this;
-            return $q(function(resolve, reject){
-                that.db.transaction(function(tx) {
-                    tx.executeSql(query, fieldValues,
-                    function(tx, result) {
-                        console.log('Query completed ', result);
-                        resolve(prepareResult(result));
-                    }, function(error) {
-                        console.log('Query ERROR: ' + error.message);
-                        reject(error);
-                    });
-                });
-            });
+        Cache.prototype.bulkUpsert = function(tableName, dataList, keyFields) {
+          var self = this;
+
+          return $q.all(dataList.map(function(data) {
+            return self.upsert(tableName, data, keyFields);
+          }));
+          
         };
 
         return new Cache();
